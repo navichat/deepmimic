@@ -134,7 +134,7 @@ build_once "glew-${GLEW_VER}" \
 # ───────────────────────────────  SWIG $SWIG_VER  ───────────────────────────
 download_and_extract "https://github.com/swig/swig/archive/refs/tags/v${SWIG_VER}.tar.gz"
 build_once "swig-${SWIG_VER}" \
-  "./autogen.sh && ./configure --without-pcre && make -j$JOBS"
+  "./autogen.sh && ./configure --without-pcre --prefix=$PWD/install && make -j$JOBS && make install"
 
 # ─────────────────────────────  DeepMimicCore Build  ─────────────────────────────
 
@@ -143,6 +143,8 @@ cd "$SCRIPT_DIR"
 
 # Set environment variables for DeepMimicCore Makefile
 echo "\nSetting environment variables for DeepMimicCore build..."
+
+export PATH="$PWD/libs/install/bin:$PATH"
 export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
 export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/install/lib"
