@@ -72,13 +72,14 @@ source ../py/bin/activate
 
 # ─────────────────────────────  Bullet $BULLET_VER  ─────────────────────────
 download_and_extract "https://github.com/bulletphysics/bullet3/archive/refs/tags/${BULLET_VER}.tar.gz"
-build_once "bullet3-${BULLET_VER}" "bash -c 'USE_DOUBLE_PRECISION=OFF ./build_cmake_pybullet_double.sh && cd build_cmake && sudo make install'"
+cd bullet3-${BULLET_VER}
+mkdir -p build_cmake
+cd build_cmake
+cmake -DCMAKE_INSTALL_PREFIX=../install ..
+make -j$JOBS
+make install
+cd ../..
 
-# After building Bullet, collect all shared libs into a single lib directory
-BULLET_LIB_DIR="$SCRIPT_DIR/libs/bullet3-${BULLET_VER}/build_cmake/lib"
-mkdir -p "$BULLET_LIB_DIR"
-find "$SCRIPT_DIR/libs/bullet3-${BULLET_VER}/build_cmake/src" -name '*.so*' -exec cp -u {} "$BULLET_LIB_DIR/" \;
-export BULLET_LIB_DIR
 
 # ─────────────────────────────  Eigen $EIGEN_VER  ───────────────────────────
 download_and_extract "https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VER}/eigen-${EIGEN_VER}.tar.gz"
@@ -144,7 +145,8 @@ build_once "swig-${SWIG_VER}" \
 
 # ─────────────────────────────  DeepMimicCore Build  ─────────────────────────────
 
-# Ensure we are in the project root
+# Ensure we are in the project root# Set Bullet lib dir to the install location
+export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
 cd "$SCRIPT_DIR"
 
 # Set environment variables for DeepMimicCore Makefile
@@ -153,11 +155,12 @@ echo "\nSetting environment variables for DeepMimicCore build..."
 export PATH="$PWD/libs/install/bin:$PATH"
 export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
-export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/lib"
+export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
 export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/include"
 export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
 export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
 export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
+export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
 
 cd DeepMimicCore
 
