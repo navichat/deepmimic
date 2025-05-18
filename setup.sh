@@ -141,6 +141,9 @@ build_once "swig-${SWIG_VER}" \
 # Ensure we are in the project root
 cd "$SCRIPT_DIR"
 
+pip install pip -U
+pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
+
 # Set environment variables for DeepMimicCore Makefile
 echo "\nSetting environment variables for DeepMimicCore build..."
 
@@ -174,9 +177,6 @@ ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"
 python3 DeepMimicCore.py || exit 1
 
 cd ..
-
-pip install pip -U
-pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
 
 echo "\nDeepMimic build complete!"
 
