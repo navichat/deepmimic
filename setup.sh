@@ -169,6 +169,7 @@ export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
 cd DeepMimicCore
 
 # Build DeepMimicCore and Python wrapper
+make clean
 make python
 
 # Set rpath for _DeepMimicCore.so if patchelf is available
