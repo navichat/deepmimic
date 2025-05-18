@@ -12,8 +12,8 @@ MKDIR = mkdir -p
 # export FREEGLUT_INC_DIR = third/freeglut-3.0.0/install/include/
 # export FREEGLUT_LIB_DIR = third/freeglut-3.0.0/install/lib
 
-PYTHON_INC = /usr/include/python3.6m
-PYTHON_LIB = /usr/lib/ -lpython3.6m
+PYTHON_INC = ../libs/Python-3.7.16/local/include/python3.7m
+PYTHON_LIB = ../libs/Python-3.7.16/local/lib -lpython3.7m
 
 INC = -I./ \
 	-I$(EIGEN_DIR) \

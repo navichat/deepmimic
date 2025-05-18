@@ -143,8 +143,9 @@ cd "$SCRIPT_DIR"
 
 # Set environment variables for DeepMimicCore Makefile
 echo "\nSetting environment variables for DeepMimicCore build..."
-export EIGEN_DIR="$PWD/libs/eigen-3.3.7"
+
 export PATH="$PWD/libs/install/bin:$PATH"
+export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
 export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/install/lib"
 export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/usr/include"
@@ -162,7 +163,7 @@ if command -v patchelf >/dev/null; then
   patchelf --set-rpath "$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR" _DeepMimicCore.so
 else
   echo "Warning: patchelf not found. Set LD_LIBRARY_PATH manually if needed."
-  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$LD_LIBRARY_PATH"
+  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR"
   echo $LD_LIBRARY_PATH
 fi
 
@@ -173,6 +174,9 @@ ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"
 python3 DeepMimicCore.py || exit 1
 
 cd ..
+
+pip install pip -U
+pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
 
 echo "\nDeepMimic build complete!"
 
