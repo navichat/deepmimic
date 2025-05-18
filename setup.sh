@@ -72,7 +72,14 @@ source ../py/bin/activate
 
 # ─────────────────────────────  Bullet $BULLET_VER  ─────────────────────────
 download_and_extract "https://github.com/bulletphysics/bullet3/archive/refs/tags/${BULLET_VER}.tar.gz"
-build_once "bullet3-${BULLET_VER}" "bash -c 'USE_DOUBLE_PRECISION=OFF ./build_cmake_pybullet_double.sh && cd build_cmake && sudo make install'"
+cd bullet3-${BULLET_VER}
+mkdir -p build_cmake
+cd build_cmake
+cmake -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
+make -j$JOBS
+make install
+cd ../..
+
 
 # ─────────────────────────────  Eigen $EIGEN_VER  ───────────────────────────
 download_and_extract "https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VER}/eigen-${EIGEN_VER}.tar.gz"
@@ -129,7 +136,7 @@ build_once "freeglut-${FREEGLUT_VER}" \
 # ──────────────────────────────  GLEW $GLEW_VER  ────────────────────────────
 download_and_extract "https://downloads.sourceforge.net/project/glew/glew/${GLEW_VER}/glew-${GLEW_VER}.tgz"
 build_once "glew-${GLEW_VER}" \
-  "make -j$JOBS && sudo make install && make clean"
+  "make -j$JOBS && make GLEW_DEST=$PWD/install install"
 
 # ───────────────────────────────  SWIG $SWIG_VER  ───────────────────────────
 download_and_extract "https://github.com/swig/swig/archive/refs/tags/v${SWIG_VER}.tar.gz"
@@ -138,7 +145,8 @@ build_once "swig-${SWIG_VER}" \
 
 # ─────────────────────────────  DeepMimicCore Build  ─────────────────────────────
 
-# Ensure we are in the project root
+# Ensure we are in the project root# Set Bullet lib dir to the install location
+export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
 cd "$SCRIPT_DIR"
 
 pip install pip -U
@@ -150,11 +158,13 @@ echo "\nSetting environment variables for DeepMimicCore build..."
 export PATH="$PWD/libs/install/bin:$PATH"
 export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
-export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/lib"
-export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/include"
+export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
+export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/include"
 export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
-export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/include"
-export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/lib"
+export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
+export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
+export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
+
 
 cd DeepMimicCore
 
@@ -163,10 +173,10 @@ make python
 
 # Set rpath for _DeepMimicCore.so if patchelf is available
 if command -v patchelf >/dev/null; then
-  patchelf --set-rpath "$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR" _DeepMimicCore.so
+  patchelf --set-rpath "$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR" _DeepMimicCore.so
 else
   echo "Warning: patchelf not found. Set LD_LIBRARY_PATH manually if needed."
-  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR"
+  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
   echo $LD_LIBRARY_PATH
 fi
 
