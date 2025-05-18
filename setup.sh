@@ -75,7 +75,7 @@ download_and_extract "https://github.com/bulletphysics/bullet3/archive/refs/tags
 cd bullet3-${BULLET_VER}
 mkdir -p build_cmake
 cd build_cmake
-cmake -DCMAKE_INSTALL_PREFIX=../install ..
+cmake -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
 make -j$JOBS
 make install
 cd ../..
