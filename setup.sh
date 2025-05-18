@@ -14,7 +14,7 @@ JOBS="$(nproc)"     # number of parallel jobs for make
 
 
 sudo apt-get update
-sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev libopenmpi-dev mesa-utils clang cmake bison byacc build-essential cmake wget curl tar autoconf libtool pkg-config libssl-dev zlib1g-dev libglew-dev freeglut3-dev libglu1-mesa-dev
+sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev libopenmpi-dev mesa-utils clang cmake bison byacc build-essential cmake wget curl tar autoconf libtool pkg-config libssl-dev zlib1g-dev libglew-dev freeglut3-dev libglu1-mesa-dev libffi-dev
 
 mkdir -p libs && cd libs
 
