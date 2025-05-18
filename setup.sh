@@ -14,7 +14,7 @@ JOBS="$(nproc)"     # number of parallel jobs for make
 
 
 sudo apt-get update
-sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev libopenmpi-dev mesa-utils clang cmake bison byacc build-essential cmake wget curl tar autoconf libtool pkg-config
+sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev libopenmpi-dev mesa-utils clang cmake bison byacc build-essential cmake wget curl tar autoconf libtool pkg-config libssl-dev zlib1g-dev libglew-dev freeglut3-dev libglu1-mesa-dev libffi-dev
 
 mkdir -p libs && cd libs
 
@@ -149,6 +149,9 @@ build_once "swig-${SWIG_VER}" \
 export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
 cd "$SCRIPT_DIR"
 
+pip install pip -U
+pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
+
 # Set environment variables for DeepMimicCore Makefile
 echo "\nSetting environment variables for DeepMimicCore build..."
 
@@ -161,6 +164,7 @@ export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
 export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
 export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
 export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
+
 
 cd DeepMimicCore
 
@@ -183,9 +187,6 @@ ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"
 python3 DeepMimicCore.py || exit 1
 
 cd ..
-
-pip install pip -U
-pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
 
 echo "\nDeepMimic build complete!"
 
