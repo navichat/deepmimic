@@ -150,11 +150,11 @@ echo "\nSetting environment variables for DeepMimicCore build..."
 export PATH="$PWD/libs/install/bin:$PATH"
 export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
-export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/install/lib"
-export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/usr/include"
-export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/install/usr/lib64"
-export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
-export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
+export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/lib"
+export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/include"
+export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
+export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/include"
+export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/lib"
 
 cd DeepMimicCore
 
