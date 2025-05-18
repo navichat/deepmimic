@@ -173,6 +173,9 @@ python3 DeepMimicCore.py || exit 1
 
 cd ..
 
+pip install pip -U
+pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
+
 echo "\nDeepMimic build complete!"
 
 echo -e "\nAll requested libraries are present and up to date!"
