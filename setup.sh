@@ -135,7 +135,7 @@ build_once "freeglut-${FREEGLUT_VER}" \
 # ──────────────────────────────  GLEW $GLEW_VER  ────────────────────────────
 download_and_extract "https://downloads.sourceforge.net/project/glew/glew/${GLEW_VER}/glew-${GLEW_VER}.tgz"
 build_once "glew-${GLEW_VER}" \
-  "make -j$JOBS && make GLEW_DEST=$PWD/install install && make clean"
+  "make -j$JOBS && make GLEW_DEST=$PWD/install install"
 
 # ───────────────────────────────  SWIG $SWIG_VER  ───────────────────────────
 download_and_extract "https://github.com/swig/swig/archive/refs/tags/v${SWIG_VER}.tar.gz"
@@ -155,7 +155,7 @@ export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
 export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/lib"
 export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/include"
-export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/install/lib"
+export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
 export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
 export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
 
