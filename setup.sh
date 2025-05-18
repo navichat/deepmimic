@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 PY_VER=3.7.16
 BULLET_VER=2.88
@@ -81,7 +82,46 @@ build_once "eigen-${EIGEN_VER}" \
 # ────────────────────────────  FreeGLUT $FREEGLUT_VER  ──────────────────────
 download_and_extract "https://github.com/freeglut/freeglut/releases/download/v${FREEGLUT_VER}/freeglut-${FREEGLUT_VER}.tar.gz"
 
-cp -fv ../patches/* freeglut-$FREEGLUT_VER/src/
+# Apply source code patches from patches/ to freeglut src/
+for patchfile in ../patches/*; do
+  fname=$(basename "$patchfile")
+  if [[ -f "freeglut-$FREEGLUT_VER/src/$fname" ]]; then
+    echo "Patching freeglut/src/$fname with $patchfile"
+    cp -fv "$patchfile" "freeglut-$FREEGLUT_VER/src/$fname"
+  fi
+  # Optionally, add more logic if you want to patch other files
+  # or use patch/diff instead of cp for more complex patches
+  # For now, we just overwrite the file
+  # You can add more sophisticated patching here if needed
+  # e.g., patch -d freeglut-$FREEGLUT_VER/src -i "$patchfile"
+done
+
+# Patch CMakeLists.txt to add explicit OpenGL/GLU linking if not present
+CMAKELISTS="freeglut-$FREEGLUT_VER/CMakeLists.txt"
+if ! grep -q 'LIST(APPEND LIBS GL GLU GLX OpenGL)' "$CMAKELISTS"; then
+  # Insert after the SET(LIBNAME ...) logic in the main UNIX block
+  awk '
+    BEGIN {patched=0}
+    /SET\(LIBNAME freeglut-gles\)/ {
+      print; next
+    }
+    /SET\(LIBNAME glut\)/ {
+      print; next
+    }
+    /SET\(LIBNAME freeglut\)/ {
+      print; next
+    }
+    /ENDIF\(\)/ && !patched {
+      print;
+      print "    # Explicitly add OpenGL and GLU libraries for UNIX";
+      print "    LIST(APPEND LIBS GL GLU GLX OpenGL)";
+      patched=1;
+      next
+    }
+    {print}
+  ' "$CMAKELISTS" > "$CMAKELISTS.tmp" && mv "$CMAKELISTS.tmp" "$CMAKELISTS"
+  echo "Patched $CMAKELISTS to add explicit OpenGL/GLU linking."
+fi
 
 build_once "freeglut-${FREEGLUT_VER}" \
   "cmake -DOpenGL_GL_PREFERENCE=GLVND . && make -j$JOBS"
@@ -96,6 +136,43 @@ download_and_extract "https://github.com/swig/swig/archive/refs/tags/v${SWIG_VER
 build_once "swig-${SWIG_VER}" \
   "./autogen.sh && ./configure --without-pcre && make -j$JOBS"
 
+# ─────────────────────────────  DeepMimicCore Build  ─────────────────────────────
 
+# Ensure we are in the project root
+cd "$SCRIPT_DIR"
+
+# Set environment variables for DeepMimicCore Makefile
+echo "\nSetting environment variables for DeepMimicCore build..."
+export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}/build/install/include/eigen3"
+export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
+export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/build_cmake/install/lib"
+export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/usr/include"
+export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/install/usr/lib64"
+export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
+export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
+
+cd DeepMimicCore
+
+# Build DeepMimicCore and Python wrapper
+make python
+
+# Set rpath for _DeepMimicCore.so if patchelf is available
+if command -v patchelf >/dev/null; then
+  patchelf --set-rpath "$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR" _DeepMimicCore.so
+else
+  echo "Warning: patchelf not found. Set LD_LIBRARY_PATH manually if needed."
+  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$LD_LIBRARY_PATH"
+  echo $LD_LIBRARY_PATH
+fi
+
+# Check for missing dynamic dependencies
+ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"; exit 1; }
+
+# Test Python wrapper
+python3 DeepMimicCore.py || exit 1
+
+cd ..
+
+echo "\nDeepMimic build complete!"
 
 echo -e "\nAll requested libraries are present and up to date!"
