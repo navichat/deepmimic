@@ -1,5 +1,5 @@
 --scene kin_char
 
---character_file data/characters/dog3d.txt
+--character_file data/characters/dog3d.json
 --kin_ctrl motion
---motion_file data/motions/dog3d_pace.txt
+--motion_file data/motions/dog3d_pace.json
