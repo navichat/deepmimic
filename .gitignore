@@ -33,3 +33,5 @@ DeepMimicCore/DeepMimicCore.py
 
 /py
 /libs
+/web/dist
+/web/node_modules
