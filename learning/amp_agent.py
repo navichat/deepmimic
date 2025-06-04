@@ -1,8 +1,10 @@
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 from env.env import Env
 import learning.tf_util as TFUtil
+from learning.dense import manual_dense as dens
 import learning.nets.net_builder as net_builder
 from learning.ppo_agent import PPOAgent
 import learning.solvers.mpi_solver as mpi_solver
@@ -78,8 +80,8 @@ class AMPAgent(PPOAgent):
 
     def _build_normalizers(self):
         super()._build_normalizers()
-        with self.sess.as_default(), self.graph.as_default(), tf.variable_scope(self.tf_scope):
-            with tf.variable_scope(self.RESOURCE_SCOPE):
+        with self.sess.as_default(), self.graph.as_default(), tf.compat.v1.variable_scope(self.tf_scope):
+            with tf.compat.v1.variable_scope(self.RESOURCE_SCOPE):
                 self._amp_obs_norm = TFNormalizer(self.sess, "amp_obs_norm", self._get_amp_obs_size(), self._get_amp_obs_norm_group())
                 self._amp_obs_norm.set_mean_std(-self._get_amp_obs_offset(), 1 / self._get_amp_obs_scale())
         return
@@ -111,14 +113,14 @@ class AMPAgent(PPOAgent):
         amp_obs_size = self._get_amp_obs_size()
 
         # setup input tensors
-        self._amp_obs_expert_ph = tf.placeholder(tf.float32, shape=[None, amp_obs_size], name="amp_obs_expert")
-        self._amp_obs_agent_ph = tf.placeholder(tf.float32, shape=[None, amp_obs_size], name="amp_obs_agent")
-        
+        self._amp_obs_expert_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, amp_obs_size], name="amp_obs_expert")
+        self._amp_obs_agent_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, amp_obs_size], name="amp_obs_agent")
+
         self._disc_expert_inputs = self._get_disc_expert_inputs()
         self._disc_agent_inputs = self._get_disc_agent_inputs()
 
-        with tf.variable_scope(self.MAIN_SCOPE):
-            with tf.variable_scope(self.DISC_SCOPE):
+        with tf.compat.v1.variable_scope(self.MAIN_SCOPE):
+            with tf.compat.v1.variable_scope(self.DISC_SCOPE):
                 self._disc_logits_expert_tf = self._build_disc_net(disc_net_name, self._disc_expert_inputs, disc_init_output_scale)
                 self._disc_logits_agent_tf = self._build_disc_net(disc_net_name, self._disc_agent_inputs, disc_init_output_scale, reuse=True)
                 
@@ -169,7 +171,7 @@ class AMPAgent(PPOAgent):
         disc_momentum = 0.9 if (self.DISC_MOMENTUM_KEY not in json_data) else json_data[self.DISC_MOMENTUM_KEY]
         
         disc_vars = self._tf_vars(self.MAIN_SCOPE + "/" + self.DISC_SCOPE)
-        disc_opt = tf.train.MomentumOptimizer(learning_rate=disc_stepsize, momentum=disc_momentum)
+        disc_opt = tf.compat.v1.train.MomentumOptimizer(learning_rate=disc_stepsize, momentum=disc_momentum)
         self._disc_grad_tf = tf.gradients(self._disc_loss_tf, disc_vars)
         self._disc_solver = mpi_solver.MPISolver(self.sess, disc_opt, disc_vars)
         
@@ -178,8 +180,8 @@ class AMPAgent(PPOAgent):
     def _build_disc_net(self, net_name, input_tfs, init_output_scale, reuse=False):
         out_size = 1
         h = net_builder.build_net(net_name, input_tfs, reuse)
-        logits_tf = tf.layers.dense(inputs=h, units=out_size, activation=None, reuse=reuse,
-                                kernel_initializer=tf.random_uniform_initializer(minval=-init_output_scale, maxval=init_output_scale),
+        logits_tf = dense(inputs=h, units=out_size, activation=None, reuse=reuse,
+                                kernel_initializer=tf.compat.v1.initializers.random_uniform(minval=-init_output_scale, maxval=init_output_scale),
                                 name=self.DISC_LOGIT_NAME)
         return logits_tf
 
@@ -386,7 +388,7 @@ class AMPAgent(PPOAgent):
         return self._grad_penalty_loss_tf.op.type != "Const"
     
     def _fetch_batch_rewards(self, start_idx, end_idx):
-        idx = np.array(list(range(start_idx, end_idx)))  
+        idx = np.array(list(range(start_idx, end_idx)))
         rewards = self._batch_calc_reward(idx)
         return rewards
 
@@ -441,12 +443,12 @@ class AMPAgent(PPOAgent):
         val_min = self._reward_min / (1.0 - self.discount)
         val_max = self._reward_max / (1.0 - self.discount)
         vals = np.clip(vals, val_min, val_max)
-        
-        idx = np.array(list(range(start_idx, end_idx)))        
+
+        idx = np.array(list(range(start_idx, end_idx)))
         is_end = self.replay_buffer.is_path_end(idx)
         is_fail = self.replay_buffer.check_terminal_flag(idx, Env.Terminate.Fail)
         is_succ = self.replay_buffer.check_terminal_flag(idx, Env.Terminate.Succ)
-        is_fail = np.logical_and(is_end, is_fail) 
+        is_fail = np.logical_and(is_end, is_fail)
         is_succ = np.logical_and(is_end, is_succ)
         vals[is_fail] = self.val_fail
         vals[is_succ] = self.val_succ
