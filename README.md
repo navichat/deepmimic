@@ -239,3 +239,9 @@ export LD_LIBRARY_PATH=/usr/local/lib/ ( can be temporary when run in terminal)
 ## Misc.
 - A ROS compatible URDF of the humanoid is available here: https://github.com/EricVoll/amp_motion_conversion
 
+## Interface with custom BVH dataset
+In your custom BVH dataset directory:
+`python bvh_to_deepmimic.py ./animations/idle/whatever.bvh --reference ../deepmimic/data/motions/humanoid3d_spinkick.json --output-dir training_data`
+
+In deepminic, then run the following:
+`python mpi_run.py --arg_file args/train_humanoid3d_whatever_args.txt --num_workers 1`
