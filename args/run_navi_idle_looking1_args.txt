@@ -21,4 +21,4 @@
 --agent_files data/agents/ct_agent_humanoid_ppo.json
 --train_agents false
 
---model_files output/idle_looking1_model.ckpt
+--model_files output/idle_looking1/agent0_model.ckpt

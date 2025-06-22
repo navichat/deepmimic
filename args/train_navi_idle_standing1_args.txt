@@ -28,5 +28,5 @@
 
 --agent_files data/agents/ct_agent_humanoid_ppo.json
 
---output_path output
+--output_path output/idle_standing1
 #--int_output_path output/intermediate
