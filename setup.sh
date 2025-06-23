@@ -15,9 +15,7 @@ JOBS="$(nproc)"     # number of parallel jobs for make
 
 sudo apt-get update
 sudo apt-get install -y patchelf swig libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev libopenmpi-dev mesa-utils clang cmake bison byacc build-essential cmake wget curl tar autoconf libtool pkg-config libssl-dev zlib1g-dev libglew-dev freeglut3-dev libglu1-mesa-dev libffi-dev
-wget http://archive.ubuntu.com/ubuntu/pool/universe/g/glew/libglew2.1_2.1.0-4_amd64.deb -O /tmp/libglew2.1_2.1.0-4_amd64.deb
-wget http://archive.ubuntu.com/ubuntu/pool/universe/g/glew/libglew-dev_2.1.0-4_amd64.deb -O /tmp/libglew-dev_2.1.0-4_amd64.deb
-sudo apt-get install -y --allow-downgrades >/tmp/libglew2.1_2.1.0-4_amd64.deb /tmp/libglew-dev_2.1.0-4_amd64.deb
+
 mkdir -p libs && cd libs
 
 
@@ -81,30 +79,28 @@ build_once "bullet3-${BULLET_VER}" \
 # ─────────────────────────────  Eigen $EIGEN_VER  ───────────────────────────
 download_and_extract "https://gitlab.com/libeigen/eigen/-/archive/${EIGEN_VER}/eigen-${EIGEN_VER}.tar.gz"
 build_once "eigen-${EIGEN_VER}" \
-  "mkdir -p build && cd build && cmake -DCMAKE_INSTALL_PREFIX=../../install .. && make -j$JOBS install"
+  "mkdir -p build && cd build && cmake .. && sudo make -j$JOBS install"
 
 # ────────────────────────────  FreeGLUT $FREEGLUT_VER  ──────────────────────
 download_and_extract "https://github.com/freeglut/freeglut/releases/download/v${FREEGLUT_VER}/freeglut-${FREEGLUT_VER}.tar.gz"
 
-# Check if patches directory exists before applying patches
-if [ -d "../patches" ] && [ "$(ls -A ../patches 2>/dev/null)" ]; then
-  # Apply source code patches from patches/ to freeglut src/
-  for patchfile in ../patches/*; do
-    if [ -f "$patchfile" ]; then
-      fname=$(basename "$patchfile")
-      if [[ -f "freeglut-$FREEGLUT_VER/src/$fname" ]]; then
-        echo "Patching freeglut/src/$fname with $patchfile"
-        cp -fv "$patchfile" "freeglut-$FREEGLUT_VER/src/$fname"
-      fi
-    fi
-  done
-else
-  echo "No patches found or patches directory doesn't exist - skipping patch step"
-fi
+# Apply source code patches from patches/ to freeglut src/
+for patchfile in ../patches/*; do
+  fname=$(basename "$patchfile")
+  if [[ -f "freeglut-$FREEGLUT_VER/src/$fname" ]]; then
+    echo "Patching freeglut/src/$fname with $patchfile"
+    cp -fv "$patchfile" "freeglut-$FREEGLUT_VER/src/$fname"
+  fi
+  # Optionally, add more logic if you want to patch other files
+  # or use patch/diff instead of cp for more complex patches
+  # For now, we just overwrite the file
+  # You can add more sophisticated patching here if needed
+  # e.g., patch -d freeglut-$FREEGLUT_VER/src -i "$patchfile"
+done
 
 # Patch CMakeLists.txt to add explicit OpenGL/GLU linking if not present
 CMAKELISTS="freeglut-$FREEGLUT_VER/CMakeLists.txt"
-if [ -f "$CMAKELISTS" ] && ! grep -q 'LIST(APPEND LIBS GL GLU GLX OpenGL)' "$CMAKELISTS"; then
+if ! grep -q 'LIST(APPEND LIBS GL GLU GLX OpenGL)' "$CMAKELISTS"; then
   # Insert after the SET(LIBNAME ...) logic in the main UNIX block
   awk '
     BEGIN {patched=0}
@@ -135,7 +131,7 @@ build_once "freeglut-${FREEGLUT_VER}" \
 # ──────────────────────────────  GLEW $GLEW_VER  ────────────────────────────
 download_and_extract "https://downloads.sourceforge.net/project/glew/glew/${GLEW_VER}/glew-${GLEW_VER}.tgz"
 build_once "glew-${GLEW_VER}" \
-  "make -j$JOBS"
+  "make -j$JOBS && make GLEW_DEST=$PWD/install install"
 
 # ───────────────────────────────  SWIG $SWIG_VER  ───────────────────────────
 download_and_extract "https://github.com/swig/swig/archive/refs/tags/v${SWIG_VER}.tar.gz"
@@ -151,16 +147,18 @@ pip install pip -U
 pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
 
 # Set environment variables for DeepMimicCore Makefile
-echo "Setting environment variables for DeepMimicCore build..."
+echo "\nSetting environment variables for DeepMimicCore build..."
 
 export PATH="$PWD/libs/swig-${SWIG_VER}/install/bin:$PATH"
 export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
 export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
-export GLEW_INC_DIR="/usr/include"  # Use system include path for GLEW
+export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/include"
 export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
 export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
 export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
+export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
+
 
 cd DeepMimicCore
 
@@ -173,27 +171,18 @@ if command -v patchelf >/dev/null; then
   patchelf --set-rpath "$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR" _DeepMimicCore.so
 else
   echo "Warning: patchelf not found. Set LD_LIBRARY_PATH manually if needed."
-  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
   echo $LD_LIBRARY_PATH
 fi
 
 # Check for missing dynamic dependencies
-ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"; exit 1; } || echo "All dependencies found!"
+ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"; exit 1; }
 
 # Test Python wrapper
 python3 DeepMimicCore.py || exit 1
 
 cd ..
 
-# Create a convenience script for running the MPI command
-cat > run_training.sh << 'EOF'
-#!/bin/bash
-env LD_LIBRARY_PATH="$PWD/libs/glew-2.1.0/lib:$PWD/libs/freeglut-3.0.0/install/lib:$PWD/libs/bullet3-2.88/install/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-    mpiexec --oversubscribe -n 32 python3 DeepMimic_Optimizer.py --arg_file args/train_amp_target_humanoid3d_walk_backflip_args.txt --num_workers 32
-EOF
-chmod +x run_training.sh
-
-echo "DeepMimic build complete!"
-echo "Run the training with: ./run_training.sh"
+echo "\nDeepMimic build complete!"
 
 echo -e "\nAll requested libraries are present and up to date!"

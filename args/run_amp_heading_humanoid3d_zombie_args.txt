@@ -4,17 +4,17 @@
 --num_sim_substeps 2
 --world_scale 4
 
---terrain_file data/terrain/plane.txt
+--terrain_file data/terrain/plane.json
 
 --char_types general
---character_files data/characters/humanoid3d.txt
+--character_files data/characters/humanoid3d.json
 --enable_char_soft_contact false
 --fall_contact_bodies 0 1 2 3 4 6 7 8 9 10 12 13 14
 
 --char_ctrls ct_pd
---char_ctrl_files data/controllers/humanoid3d_ctrl.txt
+--char_ctrl_files data/controllers/humanoid3d_ctrl.json
 --kin_ctrl clips
---motion_file data/datasets/humanoid3d_clips_zombie.txt
+--motion_file data/datasets/humanoid3d_clips_zombie.json
 --sync_char_root_pos true
 --sync_char_root_rot false
 --enable_rand_rot_reset true
@@ -30,7 +30,7 @@
 --tar_speed 1
 --vel_reward_scale 1.0
 
---agent_files data/agents/ct_agent_humanoid_amp_tasks.txt
+--agent_files data/agents/ct_agent_humanoid_amp_tasks.json
 --train_agents false
 
 --model_files data/policies/humanoid3d_amp/humanoid3d_amp_heading_zombie.ckpt
