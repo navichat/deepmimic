@@ -1,8 +1,8 @@
 from pathlib import Path
-from bvhtomimic import BvhConverter
+from bvh2mimic import BvhConverter
 
 def main():
-	converter = BvhConverter('./bvh_settings.json')
+	converter = BvhConverter('./bvh2mimic/settings.json')
 	motions_dir = Path('data/motions')
 
 	if not motions_dir.exists():
@@ -10,6 +10,7 @@ def main():
 		return
 	
 	bvh_files = list(motions_dir.glob('**/*.bvh'))
+
 	if not bvh_files:
 		print('No BVH files found in data/motions/')
 		return
@@ -18,6 +19,11 @@ def main():
 	
 	for bvh_file in bvh_files:
 		json_file = bvh_file.with_suffix('.json')
+
+		print(json_file)
+
+		if json_file.exists():
+			continue
 		
 		with open(str(json_file), 'w') as f:
 			f.write(converter.convertBvhFile(str(bvh_file), loop=True))
