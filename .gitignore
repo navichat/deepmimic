@@ -30,6 +30,7 @@ data/intermediate/
 DeepMimicCore/objs/
 DeepMimicCore/third
 DeepMimicCore/DeepMimicCore.py
+DeepMimicCore/*.dll
 
 /py
 /libs
