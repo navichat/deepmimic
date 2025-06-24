@@ -73,7 +73,7 @@ source ../py/bin/activate
 # ─────────────────────────────  Bullet $BULLET_VER  ─────────────────────────
 download_and_extract "https://github.com/bulletphysics/bullet3/archive/refs/tags/${BULLET_VER}.tar.gz"
 build_once "bullet3-${BULLET_VER}" \
-  "mkdir -p build_cmake && cd build_cmake && cmake -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DUSE_DOUBLE_PRECISION=OFF -DBUILD_SHARED_LIBS=ON -DBUILD_BULLET2_DEMOS=OFF -DBUILD_BULLET3=ON -DBUILD_CPU_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_EXTRAS=ON .. && make -j$JOBS && make install"
+  "mkdir -p build_cmake && cd build_cmake && cmake -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DUSE_DOUBLE_PRECISION=OFF -DBUILD_SHARED_LIBS=ON -DBUILD_BULLET2_DEMOS=OFF -DBUILD_BULLET3=ON -DBUILD_CPU_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_EXTRAS=ON -DBUILD_UNIT_TESTS=OFF .. && make -j$JOBS && make install"
 
 
 # ─────────────────────────────  Eigen $EIGEN_VER  ───────────────────────────
@@ -142,6 +142,9 @@ build_once "swig-${SWIG_VER}" \
 
 # Return to project root
 cd "$SCRIPT_DIR"
+
+# Activate the Python virtual environment
+source py/bin/activate
 
 pip install pip -U
 pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
