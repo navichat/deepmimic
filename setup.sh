@@ -147,7 +147,7 @@ cd "$SCRIPT_DIR"
 source py/bin/activate
 
 pip install pip -U
-pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.*
+pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.* pyquarternion
 
 # Set environment variables for DeepMimicCore Makefile
 echo "\nSetting environment variables for DeepMimicCore build..."

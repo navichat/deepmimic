@@ -3,6 +3,7 @@
 #include "sim/CtController.h"
 #include "util/FileUtil.h"
 #include "util/JsonUtil.h"
+#include "anim/MotionController.h"
 
 double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKinCharacter& kin_char) const
 {
@@ -22,11 +23,22 @@ double cSceneImitate::CalcRewardImitate(const cSimCharacter& sim_char, const cKi
 	int num_joints = sim_char.GetNumJoints();
 	assert(num_joints == mJointWeights.size());
 	
-	const double pose_scale = 2.0 / 15 * num_joints;
-	const double vel_scale = 0.1 / 15 * num_joints;
-	const double end_eff_scale = 10;
-	const double root_scale = 5;
-	const double com_scale = 10;
+	// Check if this is an idle motion by examining motion file name
+	bool is_idle_motion = false;
+	const cMotionController* motion_ctrl = dynamic_cast<const cMotionController*>(kin_char.GetController().get());
+	if (motion_ctrl) {
+		const cMotion& motion = motion_ctrl->GetMotion();
+		// Simple heuristic: if motion duration > 60 seconds, assume it's an idle motion
+		double motion_duration = motion.GetDuration();
+		is_idle_motion = (motion_duration > 60.0);
+	}
+	
+	// Use more sensitive scales for idle motions
+	const double pose_scale = is_idle_motion ? (0.5 / 15 * num_joints) : (2.0 / 15 * num_joints);
+	const double vel_scale = is_idle_motion ? (0.02 / 15 * num_joints) : (0.1 / 15 * num_joints);
+	const double end_eff_scale = is_idle_motion ? 2.0 : 10.0;
+	const double root_scale = is_idle_motion ? 1.0 : 5.0;
+	const double com_scale = is_idle_motion ? 2.0 : 10.0;
 	const double err_scale = 1;
 
 	const auto& joint_mat = sim_char.GetJointMat();
