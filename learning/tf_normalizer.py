@@ -3,6 +3,11 @@ import copy
 import tensorflow as tf
 from learning.normalizer import Normalizer
 
+# TensorFlow 2.x compatibility
+if not hasattr(tf, 'Session'):
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+
 class TFNormalizer(Normalizer):
 
     def __init__(self, sess, scope, size, groups_ids=None, eps=0.02, clip=np.inf):

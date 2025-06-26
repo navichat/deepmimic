@@ -2,6 +2,11 @@ import numpy as np
 import tensorflow as tf
 from abc import abstractmethod
 
+# TensorFlow 2.x compatibility
+if not hasattr(tf, 'Session'):
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+
 from learning.rl_agent import RLAgent
 from util.logger import Logger
 from learning.tf_normalizer import TFNormalizer

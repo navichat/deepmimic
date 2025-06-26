@@ -1,4 +1,5 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import learning.tf_util as TFUtil
 
 NAME = "fc_2layers_gated_1024units"
@@ -8,8 +9,8 @@ def build_net(input_tfs, reuse=False):
     gate_common_layers = [128]
     gate_layers = [64]
     activation = tf.nn.relu
-    weight_init = tf.contrib.layers.xavier_initializer()
-    bias_scale_kernel_init = tf.contrib.layers.xavier_initializer()
+    weight_init = tf.keras.initializers.glorot_uniform()
+    bias_scale_kernel_init = tf.keras.initializers.glorot_uniform()
 
     gate_param_tf = input_tfs[-1] # this should be the goal
     with tf.variable_scope("gate_common", reuse=reuse):

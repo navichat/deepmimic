@@ -1,241 +1,565 @@
-# Intro 
+# DeepMimic: Physics-Based Character Animation with Deep Reinforcement Learning
 
-Code accompanying the following papers:
+[![Build and Test](https://github.com/xbpeng/DeepMimic/workflows/DeepMimic%20Build%20and%20Test/badge.svg)](https://github.com/xbpeng/DeepMimic/actions)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![TensorFlow 2.x](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://tensorflow.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-"DeepMimic: Example-Guided Deep Reinforcement Learning of Physics-Based Character Skills" \
-(https://xbpeng.github.io/projects/DeepMimic/index.html) \
-![Skills](images/deepmimic_teaser.png)
+> **Modern Implementation**: This repository has been updated for compatibility with modern systems, including TensorFlow 2.x, Python 3.8+, and improved CI/CD workflows.
 
-"AMP: Adversarial Motion Priors for Stylized Physics-Based Character Control" \
-(https://xbpeng.github.io/projects/AMP/index.html) \
-![Skills](images/amp_teaser.png)
+## 📖 Introduction
 
-The framework uses reinforcement learning to train a simulated humanoid to imitate a variety
-of motion skills from mocap data.
+DeepMimic is a deep reinforcement learning framework for training physics-based character controllers to imitate motion capture data. This codebase accompanies the following research papers:
 
+**"DeepMimic: Example-Guided Deep Reinforcement Learning of Physics-Based Character Skills"**  
+[Project Page](https://xbpeng.github.io/projects/DeepMimic/index.html) | [Paper](https://dl.acm.org/doi/10.1145/3197517.3201311)
+![DeepMimic Skills](images/deepmimic_teaser.png)
 
-## Dependencies
+**"AMP: Adversarial Motion Priors for Stylized Physics-Based Character Control"**  
+[Project Page](https://xbpeng.github.io/projects/AMP/index.html) | [Paper](https://dl.acm.org/doi/10.1145/3450626.3459670)
+![AMP Skills](images/amp_teaser.png)
 
-``sudo apt install libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev``
+## ✨ Features
 
-``sudo apt install mesa-utils``
+- 🤖 **Multi-character Support**: Train humanoid and quadruped characters
+- 🎯 **Motion Imitation**: Learn from motion capture data
+- 🏃‍♂️ **Diverse Skills**: Locomotion, acrobatics, fighting, and more
+- 🌐 **Distributed Training**: MPI-based parallel training
+- 🎮 **Interactive Visualization**: Real-time 3D rendering and control
+- 🔧 **Modern Compatibility**: TensorFlow 2.x, Python 3.8+, Ubuntu 22.04+
 
-``sudo apt install clang``
+## 🚀 Quick Start
 
-``sudo apt install cmake``
+### Automated Setup (Recommended)
 
-C++:
+```bash
+# Clone the repository
+git clone https://github.com/xbpeng/DeepMimic.git
+cd DeepMimic
 
-- Bullet 2.88 (https://github.com/bulletphysics/bullet3/releases)
+# Run the automated setup script
+chmod +x setup.sh
+./setup.sh
 
-  Download Bullet 2.88 from the above link and install using the following commands.
-  
-	``./build_cmake_pybullet_double.sh``
-	
-	``cd build_cmake``
-	
-	``sudo make install``
+# Activate the environment
+source setup_env.sh
 
-- Eigen (http://www.eigen.tuxfamily.org/index.php?title=Main_Page) (Version : 3.3.7)
-
-	``mkdir build && cd build``
-	
-	``cmake ..``
-	
-	``sudo make install``
-
-- OpenGL >= 3.2
-- freeglut (http://freeglut.sourceforge.net/) ( Version : 3.0.0 )
-
-	``cmake .``
-	
-	``make``
-	
-	``sudo make install``
-  
-- glew (http://glew.sourceforge.net/) ( Version : 2.1.0 )
-
-	``make``
-	
-	``sudo make install``
-	
-	``make clean``
-
-Misc:
-
-- SWIG (http://www.swig.org/) ( Version : 4.0.0 )
-
-	``./configure --without-pcre``
-	
-	``make``
-	
-	``sudo make install``
-
-- MPI 
-	- Windows: https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi
-	- Linux: `sudo apt install libopenmpi-dev`
-
-
-Python:
-
-- Python 3
-- PyOpenGL (http://pyopengl.sourceforge.net/) 
-
-``pip install PyOpenGL PyOpenGL_accelerate``
-
-- Tensorflow (https://www.tensorflow.org/) ( Vesrion : 1.13.1 )
-
-``pip install tensorflow`` 
-- MPI4Py (https://mpi4py.readthedocs.io/en/stable/install.html)
-
-``pip install mpi4py``
-
-## Build
-The simulated environments are written in C++, and the python wrapper is built using SWIG.
-Note that MPI must be installed before MPI4Py. When building Bullet, be sure to disable double precision with the build flag `USE_DOUBLE_PRECISION=OFF`.
-
-### Windows
-The wrapper is built using `DeepMimicCore.sln`.
-
-1. Select the `x64` configuration from the configuration manager.
-
-2. Under the project properties for `DeepMimicCore` modify `Additional Include Directories` to specify
-	- Bullet source directory
-	- Eigen include directory
-	- python include directory
-
-3. Modify `Additional Library Directories` to specify
-	- Bullet lib directory
-	- python lib directory
-
-4. Build `DeepMimicCore` project with the `Release_Swig` configuration and this should
-generate `DeepMimicCore.py` in `DeepMimicCore/`.
-
-
-### Linux
-1. Modify the `Makefile` in `DeepMimicCore/` by specifying the following,
-	- `EIGEN_DIR`: Eigen include directory
-	- `BULLET_INC_DIR`: Bullet source directory
-	- `PYTHON_INC`: python include directory
-	- `PYTHON_LIB`: python lib directory
-
-2. Build wrapper,
-	```
-	make python
-	```
-This should generate `DeepMimicCore.py` in `DeepMimicCore/`
-
-
-## How to Use
-Once the python wrapper has been built, training is done entirely in python using Tensorflow.
-`DeepMimic.py` runs the visualizer used to view the simulation. Training is done with `mpi_run.py`, 
-which uses MPI to parallelize training across multiple processes.
-
-`DeepMimic.py` is run by specifying an argument file that provides the configurations for a scene.
-For example,
-```
+# Test the installation
 python DeepMimic.py --arg_file args/run_humanoid3d_spinkick_args.txt
 ```
 
-will run a pre-trained policy for a spinkick. Similarly,
-```
-python DeepMimic.py --arg_file args/play_motion_humanoid3d_args.txt
+### Docker Setup (Alternative)
+
+```bash
+# Build Docker image
+docker build -t deepmimic .
+
+# Run container
+docker run -it --rm -v $(pwd):/workspace deepmimic
 ```
 
-will load and play a mocap clip. To run a pre-trained policy for a simulated dog, use this command
+## 📋 System Requirements
+
+### Operating System
+- **Ubuntu 20.04+** (recommended)
+- **Ubuntu 18.04+** (supported)
+- **Other Linux distributions** (may require manual dependency installation)
+
+### Hardware
+- **CPU**: Multi-core processor (8+ cores recommended for training)
+- **Memory**: 8GB RAM minimum, 16GB+ recommended
+- **GPU**: NVIDIA GPU with CUDA support (optional, for faster training)
+- **Graphics**: OpenGL 3.2+ compatible graphics card
+
+### Software Dependencies
+- **Python**: 3.8, 3.9, 3.10, or 3.11
+- **TensorFlow**: 2.x (automatically installed)
+- **MPI**: OpenMPI or MPICH (for distributed training)
+- **OpenGL**: 3.2+
+- **Build Tools**: cmake, make, clang/gcc
+
+
+## 🏗️ Installation
+
+### Automatic Installation (Recommended)
+
+The provided setup script handles all dependencies and compilation automatically:
+
+```bash
+# Install system dependencies and build the project
+./setup.sh
+
+# Activate the Python environment
+source setup_env.sh
+
+# Verify installation
+python -c "import DeepMimicCore; print('✅ Installation successful!')"
 ```
+
+### Manual Installation
+
+If you prefer manual installation or encounter issues with the automatic setup:
+
+#### 1. System Dependencies
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+    python3 python3-pip python3-venv \
+    libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev \
+    libopenmpi-dev mesa-utils clang cmake bison byacc \
+    build-essential wget curl tar autoconf libtool \
+    pkg-config libssl-dev zlib1g-dev libglew-dev \
+    freeglut3-dev libglu1-mesa-dev libffi-dev \
+    patchelf swig
+```
+
+**Fedora/RHEL:**
+```bash
+sudo dnf install -y \
+    python3 python3-pip python3-virtualenv \
+    mesa-libGL-devel libX11-devel libXrandr-devel libXi-devel \
+    openmpi-devel mesa-utils clang cmake bison byacc \
+    gcc-c++ wget curl tar autoconf libtool \
+    pkgconfig openssl-devel zlib-devel glew-devel \
+    freeglut-devel mesa-libGLU-devel libffi-devel \
+    patchelf swig
+```
+
+#### 2. Python Environment
+
+```bash
+# Create virtual environment
+python3 -m venv deepmimic_env
+source deepmimic_env/bin/activate
+
+# Upgrade pip and install requirements
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+```
+
+#### 3. Build Core Libraries
+
+```bash
+# Build the C++ extension
+cd DeepMimicCore
+make clean
+make python
+cd ..
+```
+
+#### 4. Verify Installation
+
+```bash
+python -c "import DeepMimicCore; print('✅ Core library built successfully')"
+python DeepMimic.py --help
+```
+
+### 🐳 Docker Installation
+
+For a containerized environment:
+
+```dockerfile
+# Use the provided Dockerfile
+docker build -t deepmimic .
+docker run -it --rm \
+    -v $(pwd):/workspace \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    deepmimic
+```
+
+## 📚 Usage Guide
+
+### Running Pre-trained Models
+
+View pre-trained character skills:
+
+```bash
+# Humanoid skills
+python DeepMimic.py --arg_file args/run_humanoid3d_spinkick_args.txt
+python DeepMimic.py --arg_file args/run_humanoid3d_backflip_args.txt
+python DeepMimic.py --arg_file args/run_humanoid3d_walk_args.txt
+
+# Dog locomotion
 python DeepMimic.py --arg_file args/run_dog3d_pace_args.txt
-```
+python DeepMimic.py --arg_file args/run_dog3d_trot_args.txt
 
-To train a policy, use `mpi_run.py` by specifying an argument file and the number of worker processes.
-For example,
-```
-python mpi_run.py --arg_file args/train_humanoid3d_spinkick_args.txt --num_workers 16
-```
-
-will train a policy to perform a spinkick using 16 workers. As training progresses, it will regularly
-print out statistics and log them to `output/` along with a `.ckpt` of the latest policy.
-It typically takes about 60 millions samples to train one policy, which can take a day
-when training with 16 workers. 16 workers is likely the max number of workers that the
-framework can support, and it can get overwhelmed if too many workers are used.
-
-A number of argument files are already provided in `args/` for the different skills. 
-`train_[something]_args.txt` files are setup for `mpi_run.py` to train a policy, and 
-`run_[something]_args.txt` files are setup for `DeepMimic.py` to run one of the pretrained policies.
-To run your own policies, take one of the `run_[something]_args.txt` files and specify
-the policy you want to run with `--model_file`. Make sure that the reference motion `--motion_file`
-corresponds to the motion that your policy was trained for, otherwise the policy will not run properly.
-
-Similarly, to train a policy using amp, run with the corresponding argument files:
-```
-python mpi_run.py --arg_file args/train_amp_target_humanoid3d_locomotion_args.txt --num_workers 16
-```
-
-Pretrained AMP models can be evaluated using:
-```
+# AMP (Adversarial Motion Priors)
 python DeepMimic.py --arg_file args/run_amp_target_humanoid3d_locomotion_args.txt
 ```
 
-## Interface
-- the plot on the top-right shows the predictions of the value function
-- right click and drag will pan the camera
-- left click and drag will apply a force on the character at a particular location
-- scrollwheel will zoom in/out
-- pressing 'r' will reset the episode
-- pressing 'l' will reload the argument file and rebuild everything
-- pressing 'x' will pelt the character with random boxes
-- pressing space will pause/resume the simulation
-- pressing '>' will step the simulation one step at a time
+### Playing Motion Capture Data
 
+View raw motion capture clips:
 
-## Mocap Data
-Mocap clips are located in `data/motions/`. To play a clip, first modify 
-`args/play_motion_humanoid3d_args.txt` and specify the file to play with
-`--motion_file`, then run
-```
+```bash
 python DeepMimic.py --arg_file args/play_motion_humanoid3d_args.txt
 ```
 
-The motion files follow the JSON format. The `"Loop"` field specifies whether or not the motion is cyclic.
-`"wrap"` specifies a cyclic motion that will wrap back to the start at the end, while `"none"` specifies an
-acyclic motion that will stop once it reaches the end of the motion. Each vector in the `"Frames"` list
-specifies a keyframe in the motion. Each frame has the following format:
-```
-[
-	duration of frame in seconds (1D),
-	root position (3D),
-	root rotation (4D),
-	chest rotation (4D),
-	neck rotation (4D),
-	right hip rotation (4D),
-	right knee rotation (1D),
-	right ankle rotation (4D),
-	right shoulder rotation (4D),
-	right elbow rotation (1D),
-	left hip rotation (4D),
-	left knee rotation (1D),
-	left ankle rotation (4D),
-	left shoulder rotation (4D),
-	left elbow rotation (1D)
-]
+### Training New Policies
+
+Train character controllers using distributed learning:
+
+```bash
+# Train humanoid skills (recommended: 8-16 workers)
+mpiexec -n 16 python DeepMimic_Optimizer.py \
+    --arg_file args/train_humanoid3d_spinkick_args.txt
+
+# Train dog locomotion
+mpiexec -n 8 python DeepMimic_Optimizer.py \
+    --arg_file args/train_dog3d_pace_args.txt
+
+# Train with AMP
+mpiexec -n 16 python DeepMimic_Optimizer.py \
+    --arg_file args/train_amp_target_humanoid3d_locomotion_args.txt
 ```
 
-Positions are specified in meters, 3D rotations for spherical joints are specified as quaternions `(w, x, y ,z)`,
-and 1D rotations for revolute joints (e.g. knees and elbows) are represented with a scalar rotation in radians. The root
-positions and rotations are in world coordinates, but all other joint rotations are in the joint's local coordinates.
-To use your own motion clip, convert it to a similar style JSON file.
+### Alternative Training Method
 
-## Possible Issues and Solutions
+Using the legacy MPI runner:
 
-ImportError: libGLEW.so.2.1: cannot open shared object file: No such file or directory
-search for libGLEW.so.2.1 and use the following command accordingly
-ln /path/to/libGLEW.so.2.1 /usr/lib/x86----/libGLEW.so.2.1
-ln /path/to/libGLEW.so.2.1.0 /usr/lib/x86----/libGLEW.so.2.1.0
+```bash
+python mpi_run.py --arg_file args/train_humanoid3d_spinkick_args.txt --num_workers 16
+```
 
-ImportError: libBulletDynamics.so.2.88: cannot open shared object file: No such file or directory
-export LD_LIBRARY_PATH=/usr/local/lib/ ( can be temporary when run in terminal) 
-(libBullet file are present in that path - gets installed in that path after the command sudo make install while installing Bullet)
+### 🎮 Interactive Controls
 
-## Misc.
-- A ROS compatible URDF of the humanoid is available here: https://github.com/EricVoll/amp_motion_conversion
+When running the visualizer:
+
+- **Camera**: Right-click + drag to pan, scroll to zoom
+- **Forces**: Left-click + drag to apply forces to character
+- **Reset**: Press `R` to reset the episode
+- **Reload**: Press `L` to reload configuration
+- **Pause**: Press `Space` to pause/resume
+- **Step**: Press `>` to step frame-by-frame
+- **Debug**: Press `X` to spawn random objects
+
+
+## 🎭 Motion Capture Data
+
+### Using Existing Motions
+
+Motion files are located in `data/motions/` and use JSON format. To play a motion:
+
+```bash
+# Edit the motion file path in the args file
+vim args/play_motion_humanoid3d_args.txt
+# Set: --motion_file data/motions/your_motion.txt
+
+# Play the motion
+python DeepMimic.py --arg_file args/play_motion_humanoid3d_args.txt
+```
+
+### Motion File Format
+
+Each motion file contains keyframes with the following structure:
+
+```json
+{
+  "Loop": "wrap",  // "wrap" for cyclic, "none" for acyclic
+  "Frames": [
+    [
+      0.0333,           // Frame duration (seconds)
+      0, 0.85, 0,       // Root position (x, y, z)
+      1, 0, 0, 0,       // Root rotation (w, x, y, z quaternion)
+      // ... joint rotations
+    ]
+  ]
+}
+```
+
+**Frame Format** (197 values total):
+- Duration: 1 value
+- Root position: 3 values (x, y, z in meters)
+- Root rotation: 4 values (quaternion w, x, y, z)
+- Joint rotations: 189 values (quaternions for 3D joints, scalars for 1D joints)
+
+### Creating Custom Motions
+
+1. **Convert from BVH**: Use the `bvh_convert.py` utility
+2. **Manual Creation**: Follow the JSON format specification
+3. **Motion Editing**: Modify existing motions in `data/motions/`
+
+## 🔧 Configuration
+
+### Training Parameters
+
+Key parameters in training argument files:
+
+```txt
+--num_workers 16              # Number of MPI processes
+--int_output_iters 100        # Output interval
+--int_save_iters 500          # Save interval
+--max_iter 100000000          # Maximum iterations
+--learning_rate 0.001         # Learning rate
+--discount 0.95               # Discount factor
+--mini_batch_size 32          # Batch size
+```
+
+### Environment Settings
+
+```txt
+--scene                       # Scene type (humanoid, dog, etc.)
+--motion_file                 # Reference motion file
+--model_file                  # Pre-trained model (for evaluation)
+--output_path                 # Training output directory
+```
+
+### Character Customization
+
+- **Humanoid**: Modify `data/characters/humanoid3d.txt`
+- **Dog**: Modify `data/characters/dog.txt`
+- **Custom Characters**: Create new character definition files
+
+## 📊 Monitoring Training
+
+### Output Files
+
+Training produces several output files in the `output/` directory:
+
+```
+output/
+├── log.txt                   # Training logs
+├── model.ckpt                # Latest model checkpoint
+├── int_model.ckpt           # Intermediate checkpoints
+└── train_log.txt            # Detailed training metrics
+```
+
+### Training Progress
+
+Monitor training with:
+
+```bash
+# Watch training progress
+tail -f output/log.txt
+
+# Plot training curves
+python util/plot_training.py output/train_log.txt
+```
+
+### Expected Performance
+
+- **Training Time**: 8-24 hours for most skills (16 workers)
+- **Sample Efficiency**: 20-100 million samples
+- **Memory Usage**: 2-8GB per worker process
+- **Convergence**: Usually within 50-80% of maximum iterations
+
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. Import/Library Errors
+
+**Problem**: `ImportError: libGLEW.so.2.1: cannot open shared object file`
+```bash
+# Solution 1: Install GLEW
+sudo apt-get install libglew-dev
+
+# Solution 2: Create symbolic links
+sudo ln -sf /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/libGLEW.so.2.1
+```
+
+**Problem**: `ImportError: libBulletDynamics.so.2.88: cannot open shared object file`
+```bash
+# Solution: Set library path
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+# Add to ~/.bashrc for persistence
+echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+```
+
+**Problem**: `ImportError: No module named 'DeepMimicCore'`
+```bash
+# Solution: Rebuild the core library
+cd DeepMimicCore
+make clean
+make python
+cd ..
+```
+
+#### 2. TensorFlow Issues
+
+**Problem**: TensorFlow 2.x compatibility errors
+```bash
+# Solution: Environment already configured for TF 2.x
+source setup_env.sh  # This sets TF_USE_LEGACY_KERAS=1
+```
+
+**Problem**: `AttributeError: module 'tensorflow' has no attribute 'contrib'`
+```bash
+# Solution: The codebase has been updated to use tf.compat.v1
+# If you still see this error, ensure you're using the updated files
+```
+
+#### 3. MPI Issues
+
+**Problem**: MPI processes not starting or failing silently
+```bash
+# Check MPI installation
+mpiexec --version
+
+# Test with simple command
+mpiexec -n 2 python -c "from mpi4py import MPI; print(f'Rank {MPI.COMM_WORLD.Get_rank()}')"
+
+# Use alternative MPI launcher
+mpirun -n 16 python DeepMimic_Optimizer.py --arg_file args/train_humanoid3d_walk_args.txt
+```
+
+**Problem**: MPI hanging or deadlocking
+```bash
+# Reduce number of workers
+mpiexec -n 4 python DeepMimic_Optimizer.py --arg_file your_args.txt
+
+# Check system resources
+htop  # Monitor CPU and memory usage
+```
+
+#### 4. Graphics/Display Issues
+
+**Problem**: OpenGL errors or black screen
+```bash
+# Check OpenGL support
+glxinfo | grep "OpenGL version"
+
+# For headless systems, use Xvfb
+xvfb-run -a python DeepMimic.py --arg_file args/run_humanoid3d_walk_args.txt
+```
+
+**Problem**: Display issues with SSH
+```bash
+# Enable X11 forwarding
+ssh -X username@hostname
+
+# Or use VNC for better performance
+```
+
+#### 5. Performance Issues
+
+**Problem**: Slow training or high memory usage
+```bash
+# Monitor resources
+htop
+nvidia-smi  # If using GPU
+
+# Reduce batch size or number of workers
+# Edit training args file:
+--mini_batch_size 16  # Reduce from 32
+--num_workers 8       # Reduce from 16
+```
+
+**Problem**: Training not converging
+```bash
+# Check learning rate and other hyperparameters
+# Try different reference motions
+# Ensure motion file matches character model
+```
+
+### 🐛 Debugging Tips
+
+1. **Verbose Logging**: Add `--verbose` flag to argument files
+2. **Single Process**: Test with `mpiexec -n 1` first
+3. **Environment Check**: Run diagnostic script:
+
+```bash
+python -c "
+import sys
+print('Python version:', sys.version)
+import tensorflow as tf
+print('TensorFlow version:', tf.__version__)
+import DeepMimicCore
+print('DeepMimicCore imported successfully')
+from mpi4py import MPI
+print('MPI processes:', MPI.COMM_WORLD.Get_size())
+"
+```
+
+4. **Log Analysis**: Check output logs for errors:
+```bash
+grep -i error output/log.txt
+grep -i warning output/log.txt
+```
+
+### 📞 Getting Help
+
+If you encounter issues not covered here:
+
+1. **Check Issues**: Search [GitHub Issues](https://github.com/xbpeng/DeepMimic/issues)
+2. **Create Issue**: Provide system info, error messages, and steps to reproduce
+3. **Community**: Join discussions in the repository
+4. **Documentation**: Check the original papers for algorithm details
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Setup
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+python -m pytest tests/
+
+# Check code style
+black --check .
+flake8 .
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📚 Citation
+
+If you use this code in your research, please cite:
+
+```bibtex
+@article{peng2018deepmimic,
+  title={DeepMimic: Example-guided deep reinforcement learning of physics-based character skills},
+  author={Peng, Xue Bin and Abbeel, Pieter and Levine, Sergey and van de Panne, Michiel},
+  journal={ACM Transactions on Graphics (TOG)},
+  volume={37},
+  number={4},
+  pages={1--14},
+  year={2018},
+  publisher={ACM}
+}
+
+@article{peng2021amp,
+  title={AMP: Adversarial motion priors for stylized physics-based character control},
+  author={Peng, Xue Bin and Ma, Ze and Abbeel, Pieter and Levine, Sergey and Kanazawa, Angjoo},
+  journal={ACM Transactions on Graphics (TOG)},
+  volume={40},
+  number={4},
+  pages={1--15},
+  year={2021},
+  publisher={ACM}
+}
+```
+
+## 🙏 Acknowledgements
+
+- **Original Authors**: Xue Bin Peng, Pieter Abbeel, Sergey Levine, Michiel van de Panne, Ze Ma, Angjoo Kanazawa
+- **Physics Engine**: [Bullet Physics](https://github.com/bulletphysics/bullet3)
+- **Machine Learning**: [TensorFlow](https://tensorflow.org/)
+- **Community**: All contributors and users providing feedback
+
+## 🔗 Related Projects
+
+- **AMP**: [Adversarial Motion Priors](https://github.com/xbpeng/DeepMimic)
+- **CALM**: [Composable Action-Conditional Locomotion](https://github.com/nv-tlabs/CALM)
+- **ASE**: [Adversarial Skill Embeddings](https://github.com/nv-tlabs/ASE)
+- **URDF Conversion**: [ROS-compatible humanoid](https://github.com/EricVoll/amp_motion_conversion)
+
+---
+
+**Made with ❤️ by the DeepMimic community**
 

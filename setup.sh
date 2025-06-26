@@ -3,6 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Use system Python instead of building custom Python 3.7.16
+# This avoids path issues and version conflicts
 PY_VER=3.7.16
 BULLET_VER=2.88
 EIGEN_VER=3.3.7
@@ -52,20 +54,24 @@ build_once() {
   fi
 }
 
-# ─────────────────────────────  Python $PY_VER  ─────────────────────────────
+# ─────────────────────────────  Python Virtual Environment  ─────────────────────────────
+# Use system Python to create virtual environment instead of building from source
 if [[ ! -d "../py" ]]; then
-  PY_PREFIX=$PWD/Python-${PY_VER}/local
-
-  download_and_extract "https://www.python.org/ftp/python/${PY_VER}/Python-${PY_VER}.tgz"
-
-  cd "Python-${PY_VER}"
-  CFLAGS="-fPIC" ./configure --prefix=$PY_PREFIX
-  make -j$JOBS
-  make altinstall
-  cd ..
-
-  $PY_PREFIX/bin/python3.7 -m venv ../py
-  ../py/bin/python3 -m pip install numpy
+  # Check if system has Python 3
+  if ! command -v python3 &> /dev/null; then
+    echo "Python 3 is required but not installed. Please install Python 3."
+    exit 1
+  fi
+  
+  echo "Creating Python virtual environment using system Python..."
+  python3 -m venv ../py
+  
+  # Activate and install basic requirements
+  source ../py/bin/activate
+  python3 -m pip install --upgrade pip
+  python3 -m pip install numpy
+else
+  echo "✓ Python virtual environment already exists"
 fi
 
 source ../py/bin/activate
@@ -146,8 +152,28 @@ cd "$SCRIPT_DIR"
 # Activate the Python virtual environment
 source py/bin/activate
 
+# Install Python packages in the virtual environment
 pip install pip -U
-pip install PyOpenGL PyOpenGL_accelerate tensorflow==1.13.1 mpi4py protobuf==3.20.* pyquarternion
+
+# Try to install from requirements.txt, but handle version conflicts gracefully
+echo "Installing Python packages..."
+if ! pip install -r ../requirements.txt; then
+  echo "❌ Failed to install from requirements.txt (likely due to old TensorFlow version)"
+  echo "Installing compatible packages manually..."
+  
+  # Install packages that should work with current Python
+  pip install numpy PyOpenGL PyOpenGL_accelerate mpi4py pyquaternion
+  
+  # Try to install a compatible TensorFlow version
+  echo "Attempting to install compatible TensorFlow version..."
+  if ! pip install "tensorflow>=2.16.0"; then
+    echo "⚠️  Warning: Could not install TensorFlow. DeepMimic may not work for training."
+    echo "   You may need to install TensorFlow manually or use an older Python version."
+  fi
+  
+  # Install protobuf
+  pip install "protobuf>=3.20.0"
+fi
 
 # Set environment variables for DeepMimicCore Makefile
 echo "\nSetting environment variables for DeepMimicCore build..."
@@ -156,11 +182,13 @@ export PATH="$PWD/libs/swig-${SWIG_VER}/install/bin:$PATH"
 export EIGEN_DIR="$PWD/libs/eigen-${EIGEN_VER}"
 export BULLET_INC_DIR="$PWD/libs/bullet3-${BULLET_VER}/src"
 export BULLET_LIB_DIR="$PWD/libs/bullet3-${BULLET_VER}/install/lib"
-export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/install/include"
+export GLEW_INC_DIR="$PWD/libs/glew-${GLEW_VER}/include"
 export GLEW_LIB_DIR="$PWD/libs/glew-${GLEW_VER}/lib"
 export FREEGLUT_INC_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/include"
 export FREEGLUT_LIB_DIR="$PWD/libs/freeglut-${FREEGLUT_VER}/install/lib"
-export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
+
+# Set up library path for runtime linking
+export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR:${LD_LIBRARY_PATH:-}"
 
 
 cd DeepMimicCore
@@ -171,21 +199,72 @@ make python
 
 # Set rpath for _DeepMimicCore.so if patchelf is available
 if command -v patchelf >/dev/null; then
+  echo "Setting rpath for _DeepMimicCore.so..."
   patchelf --set-rpath "$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR" _DeepMimicCore.so
+  echo "✓ rpath set successfully"
 else
-  echo "Warning: patchelf not found. Set LD_LIBRARY_PATH manually if needed."
-  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR"
-  echo $LD_LIBRARY_PATH
+  echo "Warning: patchelf not found. Using LD_LIBRARY_PATH for runtime linking."
 fi
 
-# Check for missing dynamic dependencies
-ldd _DeepMimicCore.so | grep "not found" && { echo "Some dependencies not found"; exit 1; }
+# Verify library dependencies
+echo "Checking library dependencies..."
+if ldd _DeepMimicCore.so | grep "not found"; then
+  echo "❌ Some dependencies not found. Setting LD_LIBRARY_PATH..."
+  export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR:${LD_LIBRARY_PATH:-}"
+  echo "LD_LIBRARY_PATH set to: $LD_LIBRARY_PATH"
+  
+  # Test again after setting LD_LIBRARY_PATH
+  if LD_LIBRARY_PATH="$LD_LIBRARY_PATH" ldd _DeepMimicCore.so | grep "not found"; then
+    echo "❌ Dependencies still not found after setting LD_LIBRARY_PATH"
+    exit 1
+  else
+    echo "✓ Dependencies resolved with LD_LIBRARY_PATH"
+  fi
+else
+  echo "✓ All dependencies found"
+fi
 
 # Test Python wrapper
-python3 DeepMimicCore.py || exit 1
+echo "Testing Python wrapper..."
+if LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR:${LD_LIBRARY_PATH:-}" python3 -c "import DeepMimicCore; print('✓ DeepMimicCore imported successfully')"; then
+  echo "✓ Python wrapper test passed"
+else
+  echo "❌ Python wrapper test failed"
+  exit 1
+fi
 
 cd ..
 
 echo "\nDeepMimic build complete!"
+
+# Create a convenient environment setup script
+cat > setup_env.sh << 'EOF'
+#!/bin/bash
+# Source this script to set up the DeepMimic environment
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Activate Python virtual environment
+source "$SCRIPT_DIR/py/bin/activate"
+
+# Set library paths for DeepMimic
+export GLEW_LIB_DIR="$SCRIPT_DIR/libs/glew-2.1.0/lib"
+export FREEGLUT_LIB_DIR="$SCRIPT_DIR/libs/freeglut-3.0.0/install/lib"
+export BULLET_LIB_DIR="$SCRIPT_DIR/libs/bullet3-2.88/install/lib"
+export LD_LIBRARY_PATH="$GLEW_LIB_DIR:$FREEGLUT_LIB_DIR:$BULLET_LIB_DIR:${LD_LIBRARY_PATH:-}"
+
+echo "✓ DeepMimic environment activated"
+echo "  - Python virtual environment: $(which python3)"
+echo "  - LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+echo ""
+echo "You can now run DeepMimic commands, for example:"
+echo "  python3 DeepMimic.py --arg_file args/run_humanoid3d_backflip_args.txt"
+EOF
+
+chmod +x setup_env.sh
+
+echo -e "\nSetup complete!"
+echo -e "\nTo use DeepMimic:"
+echo -e "1. Source the environment: source setup_env.sh"
+echo -e "2. Run DeepMimic: python3 DeepMimic.py --arg_file args/run_humanoid3d_backflip_args.txt"
 
 echo -e "\nAll requested libraries are present and up to date!"

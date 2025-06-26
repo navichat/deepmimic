@@ -1,8 +1,14 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import os
 
-xavier_initializer = tf.contrib.layers.xavier_initializer()
+# TensorFlow 2.x compatibility for initializers
+if hasattr(tf, 'contrib'):
+    xavier_initializer = tf.contrib.layers.xavier_initializer()
+else:
+    # For TensorFlow 2.x, use the new initializer
+    xavier_initializer = tf.keras.initializers.glorot_uniform()
 
 def disable_gpu():
     os.environ["CUDA_VISIBLE_DEVICES"] = '-1'

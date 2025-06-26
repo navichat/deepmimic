@@ -1,6 +1,7 @@
 import numpy as np
 import copy as copy
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 from learning.pg_agent import PGAgent
 from learning.solvers.mpi_solver import MPISolver

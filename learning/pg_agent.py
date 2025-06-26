@@ -1,5 +1,6 @@
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import copy
 
 from learning.tf_agent import TFAgent
@@ -164,7 +165,7 @@ class PGAgent(TFAgent):
         with tf.variable_scope('critic', reuse=reuse):
             h = NetBuilder.build_net(net_name, input_tfs, reuse)
             val_tf = tf.layers.dense(inputs=h, units=out_size, activation=None,
-                                    kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                    kernel_initializer=tf.keras.initializers.glorot_uniform(),
                                     reuse=reuse)
             val_tf = tf.squeeze(val_tf, axis=-1)
 

@@ -1,6 +1,7 @@
 from enum import Enum
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import learning.tf_util as TFUtil
 from learning.tf_distribution import TFDistribution
 
@@ -31,10 +32,9 @@ class TFDistributionGaussianDiag(TFDistribution):
                                           name=name, direct_mean=mean, direct_logstd=logstd)
         return dist
 
-    def __init__(self, input, dim, std_type,
-                 mean_kernel_init=tf.contrib.layers.xavier_initializer(),
-                 mean_bias_init=tf.zeros_initializer(), 
-                 logstd_kernel_init=tf.contrib.layers.xavier_initializer(),
+    def __init__(self, input, dim, std_type,                 mean_kernel_init=tf.keras.initializers.glorot_uniform(),
+                 mean_bias_init=tf.zeros_initializer(),
+                 logstd_kernel_init=tf.keras.initializers.glorot_uniform(),
                  logstd_bias_init=tf.zeros_initializer(), 
                  name="dist_gauss_diag", direct_mean=None, direct_logstd=None,
                  reuse=False): 
