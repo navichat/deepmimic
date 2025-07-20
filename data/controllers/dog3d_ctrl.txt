@@ -1,8 +1,11 @@
 {
 	"UpdateRate": 30,
-	"EnablePhaseInput": false,
+	"EnablePhaseInput": true,
 	"RecordWorldRootPos": false,
-	"RecordWorldRootRot": false,
+	"RecordWorldRootRot": true,
+
+	"RightJoints": [9, 10, 11, 12, 17, 18, 19, 20],
+	"LeftJoints": [5, 6, 7, 8, 13, 14, 15, 16],
 
 	"PDControllers": 
 	[

@@ -79,7 +79,6 @@ bool cCtrlBuilder::BuildCtController(const tCtrlParams& params, std::shared_ptr<
 {
 	bool succ = true;
 	std::shared_ptr<cCtController> ctrl = std::shared_ptr<cCtController>(new cCtController());
-	ctrl->SetGround(params.mGround);
 	ctrl->Init(params.mChar.get(), params.mCtrlFile);
 
 	out_ctrl = ctrl;
@@ -90,7 +89,6 @@ bool cCtrlBuilder::BuildCtPDController(const tCtrlParams& params, std::shared_pt
 {
 	bool succ = true;
 	std::shared_ptr<cCtPDController> ctrl = std::shared_ptr<cCtPDController>(new cCtPDController());
-	ctrl->SetGround(params.mGround);
 	ctrl->SetGravity(params.mGravity);
 	ctrl->Init(params.mChar.get(), params.mCtrlFile);
 
@@ -102,7 +100,6 @@ bool cCtrlBuilder::BuildCtVelController(const tCtrlParams& params, std::shared_p
 {
 	bool succ = true;
 	std::shared_ptr<cCtVelController> ctrl = std::shared_ptr<cCtVelController>(new cCtVelController());
-	ctrl->SetGround(params.mGround);
 	ctrl->SetGravity(params.mGravity);
 	ctrl->Init(params.mChar.get(), params.mCtrlFile);
 

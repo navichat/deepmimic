@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-07-19T19:32:16.550910",
+  "models": {
+    "humanoid3d_roll": "FAIL",
+    "humanoid3d_kick": "FAIL",
+    "humanoid3d_cartwheel": "FAIL",
+    "humanoid3d_getup_faceup": "FAIL",
+    "humanoid3d_walk": "FAIL",
+    "humanoid3d_crawl": "FAIL",
+    "humanoid3d_getup_facedown": "FAIL",
+    "humanoid3d_jump": "FAIL",
+    "humanoid3d_dance_a": "FAIL",
+    "humanoid3d_spin": "FAIL",
+    "humanoid3d_spinkick": "FAIL",
+    "humanoid3d_punch": "FAIL",
+    "humanoid3d_dance_b": "FAIL",
+    "humanoid3d_backflip": "FAIL",
+    "humanoid3d_run": "FAIL"
+  },
+  "detailed_results": {}
+}

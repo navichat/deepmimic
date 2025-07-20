@@ -63,8 +63,8 @@ void cRLSceneSimChar::RecordState(int agent_id, Eigen::VectorXd& out_state) cons
 
 void cRLSceneSimChar::RecordGoal(int agent_id, Eigen::VectorXd& out_goal) const
 {
-	int goal_size = GetGoalSize(agent_id);
-	out_goal = std::numeric_limits<double>::quiet_NaN() * Eigen::VectorXd::Ones(goal_size);
+	const auto& ctrl = GetController(agent_id);
+	ctrl->RecordGoal(out_goal);
 }
 
 void cRLSceneSimChar::SetAction(int agent_id, const Eigen::VectorXd& action)
@@ -87,7 +87,8 @@ int cRLSceneSimChar::GetStateSize(int agent_id) const
 
 int cRLSceneSimChar::GetGoalSize(int agent_id) const
 {
-	return 0;
+	const auto& ctrl = GetController(agent_id);
+	return ctrl->GetGoalSize();
 }
 
 int cRLSceneSimChar::GetActionSize(int agent_id) const
@@ -110,9 +111,8 @@ void cRLSceneSimChar::BuildStateOffsetScale(int agent_id, Eigen::VectorXd& out_o
 
 void cRLSceneSimChar::BuildGoalOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const
 {
-	int goal_size = GetGoalSize(agent_id);
-	out_offset = Eigen::VectorXd::Zero(goal_size);
-	out_scale = Eigen::VectorXd::Ones(goal_size);
+	const auto& ctrl = GetController(agent_id);
+	ctrl->BuildGoalOffsetScale(out_offset, out_scale);
 }
 
 void cRLSceneSimChar::BuildActionOffsetScale(int agent_id, Eigen::VectorXd& out_offset, Eigen::VectorXd& out_scale) const
@@ -135,8 +135,8 @@ void cRLSceneSimChar::BuildStateNormGroups(int agent_id, Eigen::VectorXi& out_gr
 
 void cRLSceneSimChar::BuildGoalNormGroups(int agent_id, Eigen::VectorXi& out_groups) const
 {
-	int goal_size = GetGoalSize(agent_id);
-	out_groups = cCharController::gNormGroupSingle * Eigen::VectorXi::Ones(goal_size);
+	const auto& ctrl = GetController(agent_id);
+	ctrl->BuildGoalNormGroups(out_groups);
 }
 
 double cRLSceneSimChar::GetRewardMin(int agent_id) const
@@ -147,41 +147,6 @@ double cRLSceneSimChar::GetRewardMin(int agent_id) const
 double cRLSceneSimChar::GetRewardMax(int agent_id) const
 {
 	return mAgentReg.GetAgent(agent_id)->GetRewardMax();
-}
-
-bool cRLSceneSimChar::EnableAMPTaskReward() const
-{
-	return false;
-}
-
-int cRLSceneSimChar::GetAMPObsSize() const
-{
-	return 0;
-}
-
-void cRLSceneSimChar::GetAMPObsOffset(Eigen::VectorXd& out_data) const
-{
-	out_data.resize(0);
-}
-
-void cRLSceneSimChar::GetAMPObsScale(Eigen::VectorXd& out_data) const
-{
-	out_data.resize(0);
-}
-
-void cRLSceneSimChar::GetAMPObsNormGroup(Eigen::VectorXi& out_data) const
-{
-	out_data.resize(0);
-}
-
-void cRLSceneSimChar::RecordAMPObsAgent(int agent_id, Eigen::VectorXd& out_data)
-{
-	out_data.resize(0);
-}
-
-void cRLSceneSimChar::RecordAMPObsExpert(int agent_id, Eigen::VectorXd& out_data)
-{
-	out_data.resize(0);
 }
 
 cRLSceneSimChar::eTerminate cRLSceneSimChar::CheckTerminate(int agent_id) const
@@ -213,10 +178,10 @@ bool cRLSceneSimChar::CheckValidEpisode() const
 void cRLSceneSimChar::LogVal(int agent_id, double val)
 {
 	const auto& ctrl = GetController(agent_id);
-	cDeepMimicCharController* char_ctrl = dynamic_cast<cDeepMimicCharController*>(ctrl.get());
-	if (char_ctrl != nullptr)
+	cDeepMimicCharController* trl_ctrl = dynamic_cast<cDeepMimicCharController*>(ctrl.get());
+	if (trl_ctrl != nullptr)
 	{
-		char_ctrl->LogVal(val);
+		trl_ctrl->LogVal(val);
 	}
 }
 

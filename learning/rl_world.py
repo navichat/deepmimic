@@ -23,18 +23,13 @@ class RLWorld(object):
     
     def set_enable_training(self, enable):
         self._enable_training = enable
-        is_train_mode = self._enable_training
-
         for i in range(len(self.agents)):
             curr_agent = self.agents[i]
             if curr_agent is not None:
                 enable_curr_train = self.train_agents[i] if (len(self.train_agents) > 0) else True
                 curr_agent.enable_training = self.enable_training and enable_curr_train
 
-                if (i == 0):
-                    is_train_mode = curr_agent.enable_training
-
-        if (is_train_mode):
+        if (self._enable_training):
             self.env.set_mode(RLAgent.Mode.TRAIN)
         else:
             self.env.set_mode(RLAgent.Mode.TEST)

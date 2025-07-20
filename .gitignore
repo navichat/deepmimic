@@ -33,3 +33,8 @@ DeepMimicCore/DeepMimicCore.py
 
 /py
 /libs
+
+venv/
+*.log
+*.pth
+*.onnx

@@ -92,11 +92,6 @@ double cTimer::GetMaxTime() const
 	return mMaxTime;
 }
 
-void cTimer::SetTime(double time)
-{
-	mTime = time;
-}
-
 void cTimer::SetMaxTime(double time)
 {
 	mMaxTime = time;

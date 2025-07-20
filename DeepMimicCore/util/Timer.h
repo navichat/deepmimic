@@ -35,7 +35,6 @@ public:
 
 	virtual double GetTime() const;
 	virtual double GetMaxTime() const;
-	virtual void SetTime(double time);
 	virtual void SetMaxTime(double time);
 
 	virtual const tParams& GetParams() const;

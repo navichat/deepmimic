@@ -1,0 +1,252 @@
+{
+  "total_models": 31,
+  "passed": 15,
+  "failed": 16,
+  "results": {
+    "humanoid3d_humanoid3d_dance_b": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_spin": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_spin.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_cartwheel": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_humanoid3d_kick": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_kick": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_kick.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_getup_facedown": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_getup_facedown.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_getup_faceup": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_getup_faceup.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_dance_a": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_dance_a.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "test_walk_fixed": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "test_walk": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/test_walk.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_getup_facedown": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_cartwheel": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_cartwheel.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_backflip": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_backflip.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_getup_faceup": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_roll": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_roll.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_jump": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_humanoid3d_dance_a": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_spinkick": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_spinkick.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_run": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_run": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_run.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_walk": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_walk.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_jump": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_jump.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_punch": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_punch.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_crawl": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_humanoid3d_spinkick": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_humanoid3d_walk": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_humanoid3d_backflip": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_crawl": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_crawl.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    },
+    "humanoid3d_humanoid3d_punch": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_humanoid3d_roll": {
+      "status": "SUCCESS",
+      "input_shape": [
+        null,
+        197
+      ],
+      "output_shape": [
+        null,
+        36
+      ],
+      "test_cases": 5
+    },
+    "humanoid3d_dance_b": {
+      "status": "FAILED",
+      "error": "[ONNXRuntimeError] : 1 : FAIL : Load model from /home/barberb/motion/DeepMimic/data/policies_onnx/humanoid3d_dance_b.onnx failed:Node (layer_0_matmul) Op (MatMul) [ShapeInferenceError] Incompatible dimensions for matrix multiplication"
+    }
+  },
+  "success_rate": 48.38709677419355
+}

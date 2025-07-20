@@ -1,14 +1,8 @@
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
 import numpy as np
 import os
 
-# TensorFlow 2.x compatibility for initializers
-if hasattr(tf, 'contrib'):
-    xavier_initializer = tf.contrib.layers.xavier_initializer()
-else:
-    # For TensorFlow 2.x, use the new initializer
-    xavier_initializer = tf.keras.initializers.glorot_uniform()
+xavier_initializer = tf.contrib.layers.xavier_initializer()
 
 def disable_gpu():
     os.environ["CUDA_VISIBLE_DEVICES"] = '-1'
@@ -67,16 +61,6 @@ def calc_logp_gaussian(x_tf, mean_tf, std_tf):
     logp_tf += -0.5 * dim * np.log(2 * np.pi) - tf.reduce_sum(tf.log(std_tf), axis=-1)
     
     return logp_tf
-
-def bound_loss(val, bound_min, bound_max, axis=-1):
-    violation_min = tf.minimum(val - bound_min, 0)
-    violation_max = tf.maximum(val - bound_max, 0)
-    violation = tf.reduce_sum(tf.square(violation_min), axis=axis) \
-                + tf.reduce_sum(tf.square(violation_max), axis=axis)
-
-    loss = 0.5 * tf.reduce_mean(violation)
-
-    return loss
 
 def calc_bound_loss(x_tf, bound_min, bound_max):
     # penalty for violating bounds

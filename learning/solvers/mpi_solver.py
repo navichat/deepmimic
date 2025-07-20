@@ -1,6 +1,5 @@
 from mpi4py import MPI
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
 import numpy as np
 import learning.tf_util as TFUtil
 import util.math_util as MathUtil

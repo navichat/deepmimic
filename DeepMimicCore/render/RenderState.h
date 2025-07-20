@@ -84,7 +84,7 @@ public:
     {
         glEnableVertexAttribArray(mAttribNumber);
         glVertexAttribPointer(mAttribNumber, mNumComp, GL_FLOAT, GL_FALSE,
-                              mDataStride, reinterpret_cast<GLvoid*>(mDataOffset));
+                              mDataStride, (GLvoid *) mDataOffset);
     }
 
     GLuint operator[](unsigned int i)

@@ -4,7 +4,6 @@
 
 #include "Scene.h"
 #include "anim/KinCharacter.h"
-#include "anim/KinCtrlBuilder.h"
 
 class cSceneKinChar : virtual public cScene
 {
@@ -30,13 +29,11 @@ public:
 protected:
 	cKinCharacter::tParams mCharParams;
 	std::shared_ptr<cKinCharacter> mChar;
-	cKinCtrlBuilder::tCtrlParams mCtrlParams;
-
+	
 	virtual void ParseCharParams(const std::shared_ptr<cArgParser>& parser, cKinCharacter::tParams& out_params) const;
-	virtual void ParseCharCtrlParams(const std::shared_ptr<cArgParser>& parser, cKinCtrlBuilder::tCtrlParams& out_params) const;
 
-	virtual bool BuildCharacter();
-	virtual void ResetCharacter();
-	virtual void UpdateCharacter(double timestep);
-	virtual bool BuildController();
+	virtual bool BuildCharacters();
+	virtual bool BuildCharacter(const cKinCharacter::tParams& params, std::shared_ptr<cKinCharacter>& out_char) const;
+	virtual void ResetCharacters();
+	virtual void UpdateCharacters(double timestep);
 };

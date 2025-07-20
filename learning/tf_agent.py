@@ -2,11 +2,6 @@ import numpy as np
 import tensorflow as tf
 from abc import abstractmethod
 
-# TensorFlow 2.x compatibility
-if not hasattr(tf, 'Session'):
-    import tensorflow.compat.v1 as tf
-    tf.disable_v2_behavior()
-
 from learning.rl_agent import RLAgent
 from util.logger import Logger
 from learning.tf_normalizer import TFNormalizer
@@ -71,9 +66,9 @@ class TFAgent(RLAgent):
     def _init_normalizers(self):
         with self.sess.as_default(), self.graph.as_default():
             # update normalizers to sync the tensorflow tensors
-            self._s_norm.update()
-            self._g_norm.update()
-            self._a_norm.update()
+            self.s_norm.update()
+            self.g_norm.update()
+            self.a_norm.update()
         return
 
     @abstractmethod
@@ -97,27 +92,28 @@ class TFAgent(RLAgent):
     def _build_normalizers(self):
         with self.sess.as_default(), self.graph.as_default(), tf.variable_scope(self.tf_scope):
             with tf.variable_scope(self.RESOURCE_SCOPE):
-                self._s_norm = TFNormalizer(self.sess, 's_norm', self.get_state_size(), self.world.env.build_state_norm_groups(self.id))
-                self._s_norm.set_mean_std(-self.world.env.build_state_offset(self.id), 
+                self.s_norm = TFNormalizer(self.sess, 's_norm', self.get_state_size(), self.world.env.build_state_norm_groups(self.id))
+                self.s_norm.set_mean_std(-self.world.env.build_state_offset(self.id), 
                                          1 / self.world.env.build_state_scale(self.id))
                 
-                self._g_norm = TFNormalizer(self.sess, 'g_norm', self.get_goal_size(), self.world.env.build_goal_norm_groups(self.id))
-                self._g_norm.set_mean_std(-self.world.env.build_goal_offset(self.id), 
+                self.g_norm = TFNormalizer(self.sess, 'g_norm', self.get_goal_size(), self.world.env.build_goal_norm_groups(self.id))
+                self.g_norm.set_mean_std(-self.world.env.build_goal_offset(self.id), 
                                          1 / self.world.env.build_goal_scale(self.id))
 
-                self._a_norm = TFNormalizer(self.sess, 'a_norm', self.get_action_size())
-                self._a_norm.set_mean_std(-self.world.env.build_action_offset(self.id), 
+                self.a_norm = TFNormalizer(self.sess, 'a_norm', self.get_action_size())
+                self.a_norm.set_mean_std(-self.world.env.build_action_offset(self.id), 
                                          1 / self.world.env.build_action_scale(self.id))
         return
 
     def _load_normalizers(self):
-        self._s_norm.load()
-        self._g_norm.load()
-        self._a_norm.load()
+        self.s_norm.load()
+        self.g_norm.load()
+        self.a_norm.load()
         return
 
     def _update_normalizers(self):
-        super()._update_normalizers()
+        with self.sess.as_default(), self.graph.as_default():
+            super()._update_normalizers()
         return
 
     def _initialize_vars(self):
