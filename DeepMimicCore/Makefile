@@ -12,8 +12,21 @@ MKDIR = mkdir -p
 # export FREEGLUT_INC_DIR = third/freeglut-3.0.0/install/include/
 # export FREEGLUT_LIB_DIR = third/freeglut-3.0.0/install/lib
 
-PYTHON_INC = ../libs/Python-3.7.16/local/include/python3.7m
-PYTHON_LIB = ../libs/Python-3.7.16/local/lib -lpython3.7m
+# Set library directories to /usr/lib/ where you found them
+BULLET_LIB_DIR=/usr/lib
+GLEW_LIB_DIR=/usr/lib  
+FREEGLUT_LIB_DIR=/usr/lib
+PYTHON_LIB=/usr/lib/python3.13
+
+# Keep the include directories as before
+EIGEN_DIR=/usr/include/eigen3
+BULLET_INC_DIR=/usr/include/bullet
+GLEW_INC_DIR=/usr/include
+FREEGLUT_INC_DIR=/usr/include
+PYTHON_INC=/usr/include/python3.13
+
+PYTHON_INC = /usr/include/python3.13  #../libs/Python-3.7.16/local/include/python3.7m
+PYTHON_LIB = /usr/lib/python3.13  #../libs/Python-3.7.16/local/lib -lpython3.7m
 
 INC = -I./ \
 	-I$(EIGEN_DIR) \
@@ -57,7 +70,13 @@ python: $(OUT_DIRS) $(OBJ)
 	$(CC) -shared $(CFLAGS) $(OBJ) $(LIBS) DeepMimicCore_wrap.o -o _DeepMimicCore.so -L$(PYTHON_LIB) $(LIBDIRS)
 
 $(OBJ_DIR)/%.o: %.cpp
-	$(CC) -c -g $(CFLAGS) $(INC) -o $@ $<
+	@echo "Creating directory: $(dir $@)"
+	@mkdir -p $(dir $@)
+	@echo "Directory created, now compiling: $< -> $@"
+	@echo "Checking if directory eists:"
+	@ls -la $(dir $@)
+	#$(CC) -c -g $(CFLAGS) $(INC) -o $@ $<
+	clang++ -c -g -std=c++11 -O3 -Wall -fPIC -I./ -I/usr/include/eigen3 -I/usr/include/bullet -I/usr/include -o $@ $<
 
 $(BIN): $(OUT_DIRS) $(OBJ)
 	$(CC) -g $(CFLAGS) $(OBJ) $(LIBS) -o $@

@@ -7,7 +7,7 @@ def set_global_seeds(seed):
     except ImportError:
         pass
     else:
-        tf.set_random_seed(seed)
+        tf.compat.v1.set_random_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
     return

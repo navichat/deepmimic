@@ -1,5 +1,7 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import learning.tf_util as TFUtil
+from learning.dense import manual_dense as dens
 
 NAME = "fc_2layers_gated_1024units"
 
@@ -8,11 +10,11 @@ def build_net(input_tfs, reuse=False):
     gate_common_layers = [128]
     gate_layers = [64]
     activation = tf.nn.relu
-    weight_init = tf.contrib.layers.xavier_initializer()
-    bias_scale_kernel_init = tf.contrib.layers.xavier_initializer()
+    weight_init = tf.compat.v1.initializers.glorot_uniform()
+    bias_scale_kernel_init = tf.compat.v1.initializers.glorot_uniform()
 
     gate_param_tf = input_tfs[-1] # this should be the goal
-    with tf.variable_scope("gate_common", reuse=reuse):
+    with tf.compat.v1.variable_scope("gate_common", reuse=reuse):
         gate_common_tf = TFUtil.fc_net(gate_param_tf, gate_common_layers,
                                        activation=activation, reuse=reuse)
         gate_common_tf = activation(gate_common_tf)
@@ -21,32 +23,32 @@ def build_net(input_tfs, reuse=False):
 
     curr_tf = input_tf
     for i, size in enumerate(layers):
-        with tf.variable_scope(str(i), reuse=reuse):
-            curr_tf = tf.layers.dense(inputs=curr_tf,
+        with tf.compat.v1.variable_scope(str(i), reuse=reuse):
+            curr_tf = dense(inputs=curr_tf,
                                     units=size,
                                     kernel_initializer=weight_init,
                                     activation=None)
 
-        with tf.variable_scope("gate{:d}".format(i), reuse=reuse):
+        with tf.compat.v1.variable_scope("gate{:d}".format(i), reuse=reuse):
             if (len(gate_layers) == 0):
                 curr_gate_h_tf = gate_common_tf
             else:
-                curr_gate_h_tf = TFUtil.fc_net(input=gate_common_tf, 
+                curr_gate_h_tf = TFUtil.fc_net(input=gate_common_tf,
                                         layers_sizes=gate_layers,
                                         activation=activation,
                                         reuse=reuse)
                 curr_gate_h_tf = activation(curr_gate_h_tf)
-            
-            curr_gate_bias_tf = tf.layers.dense(inputs=curr_gate_h_tf,
+
+            curr_gate_bias_tf = dense(inputs=curr_gate_h_tf,
                                                units=size,
                                                kernel_initializer=bias_scale_kernel_init,
-                                               bias_initializer=tf.zeros_initializer(),
+                                               bias_initializer=tf.compat.v1.initializers.zeros(),
                                                activation=None)
 
-            curr_gate_scale_tf = tf.layers.dense(inputs=curr_gate_h_tf,
+            curr_gate_scale_tf = dense(inputs=curr_gate_h_tf,
                                                units=size,
                                                kernel_initializer=bias_scale_kernel_init,
-                                               bias_initializer=tf.zeros_initializer(),
+                                               bias_initializer=tf.compat.v1.initializers.zeros(),
                                                activation=None)
             curr_gate_scale_tf = 2 * tf.sigmoid(curr_gate_scale_tf)
 

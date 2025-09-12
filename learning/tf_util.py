@@ -1,8 +1,12 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import os
 
-xavier_initializer = tf.contrib.layers.xavier_initializer()
+from learning.dense import manual_dense as dense
+
+# Xavier initializer replacement
+xavier_initializer = tf.compat.v1.initializers.glorot_uniform()
 
 def disable_gpu():
     os.environ["CUDA_VISIBLE_DEVICES"] = '-1'
@@ -27,8 +31,8 @@ def flat_grad(loss, var_list, grad_ys=None):
 def fc_net(input, layers_sizes, activation, reuse=None, flatten=False): # build fully connected network
     curr_tf = input
     for i, size in enumerate(layers_sizes):
-        with tf.variable_scope(str(i), reuse=reuse):
-            curr_tf = tf.layers.dense(inputs=curr_tf,
+        with tf.compat.v1.variable_scope(str(i), reuse=reuse):
+            curr_tf = dense(inputs=curr_tf,
                                     units=size,
                                     kernel_initializer=xavier_initializer,
                                     activation = activation if i < len(layers_sizes)-1 else None)
@@ -59,7 +63,7 @@ def calc_logp_gaussian(x_tf, mean_tf, std_tf):
 
     logp_tf = -0.5 * tf.reduce_sum(tf.square(diff_tf / std_tf), axis=-1)
     logp_tf += -0.5 * dim * np.log(2 * np.pi) - tf.reduce_sum(tf.log(std_tf), axis=-1)
-    
+
     return logp_tf
 
 def bound_loss(val, bound_min, bound_max, axis=-1):

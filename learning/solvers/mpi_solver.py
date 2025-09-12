@@ -1,5 +1,6 @@
 from mpi4py import MPI
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 import learning.tf_util as TFUtil
 import util.math_util as MathUtil
@@ -80,7 +81,7 @@ class MPISolver(Solver):
         for v in self.vars:
             shape = v.get_shape()
             grad = np.zeros(shape)
-            grad_tf = tf.placeholder(tf.float32, shape=shape)
+            grad_tf = tf.compat.v1.placeholder(tf.float32, shape=shape)
             self._grad_buffers.append(grad)
             self._grad_tf_list.append(grad_tf)
 

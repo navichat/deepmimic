@@ -1,6 +1,7 @@
 import numpy as np
 import copy as copy
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 from learning.pg_agent import PGAgent
 from learning.solvers.mpi_solver import MPISolver
@@ -62,14 +63,14 @@ class PPOAgent(PGAgent):
         a_size = self.get_action_size()
 
         # setup input tensors
-        self._s_ph = tf.placeholder(tf.float32, shape=[None, s_size], name="s")
-        self._g_ph = tf.placeholder(tf.float32, shape=([None, g_size] if self.has_goal() else None), name="g")
-        self._a_ph = tf.placeholder(tf.float32, shape=[None, a_size], name="a")
-        self._old_logp_ph = tf.placeholder(tf.float32, shape=[None], name="old_logp")
-        self._tar_val_ph = tf.placeholder(tf.float32, shape=[None], name="tar_val")
-        self._adv_ph = tf.placeholder(tf.float32, shape=[None], name="adv")
+        self._s_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, s_size], name="s")
+        self._g_ph = tf.compat.v1.placeholder(tf.float32, shape=([None, g_size] if self.has_goal() else None), name="g")
+        self._a_ph = tf.compat.v1.placeholder(tf.float32, shape=[None, a_size], name="a")
+        self._old_logp_ph = tf.compat.v1.placeholder(tf.float32, shape=[None], name="old_logp")
+        self._tar_val_ph = tf.compat.v1.placeholder(tf.float32, shape=[None], name="tar_val")
+        self._adv_ph = tf.compat.v1.placeholder(tf.float32, shape=[None], name="adv")
 
-        with tf.variable_scope('main'):
+        with tf.compat.v1.variable_scope('main'):
             self._norm_a_pd_tf = self._build_net_actor(actor_net_name, self._get_actor_inputs(), actor_init_output_scale)
             self._critic_tf = self._build_net_critic(critic_net_name, self._get_critic_inputs())
                 
@@ -127,12 +128,12 @@ class PPOAgent(PGAgent):
         critic_momentum = 0.9 if (self.CRITIC_MOMENTUM_KEY not in json_data) else json_data[self.CRITIC_MOMENTUM_KEY]
         
         critic_vars = self._tf_vars(self.MAIN_SCOPE + '/critic')
-        critic_opt = tf.train.MomentumOptimizer(learning_rate=critic_stepsize, momentum=critic_momentum)
+        critic_opt = tf.compat.v1.train.MomentumOptimizer(learning_rate=critic_stepsize, momentum=critic_momentum)
         self._critic_grad_tf = tf.gradients(self._critic_loss_tf, critic_vars)
         self._critic_solver = MPISolver(self.sess, critic_opt, critic_vars)
 
         actor_vars = self._tf_vars(self.MAIN_SCOPE + '/actor')
-        actor_opt = tf.train.MomentumOptimizer(learning_rate=actor_stepsize, momentum=actor_momentum)
+        actor_opt = tf.compat.v1.train.MomentumOptimizer(learning_rate=actor_stepsize, momentum=actor_momentum)
         self._actor_grad_tf = tf.gradients(self._actor_loss_tf, actor_vars)
         self._actor_solver = MPISolver(self.sess, actor_opt, actor_vars)
         
